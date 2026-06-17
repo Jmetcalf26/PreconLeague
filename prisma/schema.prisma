@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users / profiles
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatarColor  String   @default("#ed591f")
+  bio          String?
+  isAdmin      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  decks        Deck[]
+  matchPlayers MatchPlayer[]
+  matchesAdded Match[]       @relation("MatchCreatedBy")
+}
+
+// ---------------------------------------------------------------------------
+// Decks
+// ---------------------------------------------------------------------------
+
+model Deck {
+  id            String   @id @default(cuid())
+  name          String
+  ownerId       String
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Free-form precon / theme name, e.g. "Eldrazi Unbound"
+  preconName    String?
+  // The deck's color identity, derived from cards (array of W,U,B,R,G).
+  colorIdentity String[] @default([])
+
+  // Where the original list came from.
+  sourceType    String   @default("paste") // paste | moxfield
+  sourceUrl     String?
+
+  // Immutable snapshot of the original precon card ids. This is the source of
+  // truth for "baseline" cards: anything not in here counts as a paid upgrade,
+  // and re-adding an original card is always free.
+  baselineCardIds String[] @default([])
+
+  cards         DeckCard[]
+  matchPlayers  MatchPlayer[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+// A single card slot inside a deck.
+// `isBaseline` marks cards that were part of the original precon import; they
+// are "free" and removing them costs nothing. Cards added during editing
+// (isBaseline = false) count against the league upgrade budget.
+model DeckCard {
+  id           String  @id @default(cuid())
+  deckId       String
+  deck         Deck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  // Link to the cached Scryfall card. Cards always resolve through Scryfall.
+  cardId       String
+  card         CardCache @relation(fields: [cardId], references: [id])
+
+  quantity     Int     @default(1)
+  isCommander  Boolean @default(false)
+  isBaseline   Boolean @default(true)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([deckId, cardId])
+  @@index([deckId])
+  @@index([cardId])
+}
+
+// ---------------------------------------------------------------------------
+// Scryfall card cache
+// ---------------------------------------------------------------------------
+
+// Local cache of Scryfall card data so we don't hammer their API and so prices
+// stay stable between refreshes. Keyed by the Scryfall card id.
+model CardCache {
+  id            String   @id // scryfall id
+  oracleId      String
+  name          String
+  setCode       String
+  collectorNo   String
+  rarity        String?
+  manaValue     Float    @default(0)
+  typeLine      String   @default("")
+  oracleText    String?
+  colors        String[] @default([])
+  colorIdentity String[] @default([])
+  // Whether this card can be a commander (legendary creature / planeswalker rule text).
+  canBeCommander Boolean @default(false)
+
+  priceUsd      Float?
+  priceUsdFoil  Float?
+
+  imageSmall    String?
+  imageNormal   String?
+  imageArtCrop  String?
+  scryfallUri   String?
+
+  fetchedAt     DateTime @default(now())
+
+  deckCards     DeckCard[]
+
+  @@index([name])
+  @@index([oracleId])
+}
+
+// ---------------------------------------------------------------------------
+// League configuration (single league, single row)
+// ---------------------------------------------------------------------------
+
+model League {
+  id                  String   @id @default("league")
+  name                String   @default("Precon League")
+  description         String?
+
+  // Editing restrictions.
+  upgradeBudgetUsd    Float    @default(15)
+  enforceColorIdentity Boolean @default(true)
+  enforceSingleton    Boolean  @default(true)
+  requireCommander    Boolean  @default(true)
+  minDeckSize         Int      @default(100)
+  maxDeckSize         Int      @default(100)
+  bannedCards         String[] @default([])
+
+  // Scoring for standings: points awarded by finishing placement (index 0 = 1st).
+  placementPoints     Int[]    @default([3, 1, 0, 0])
+
+  updatedAt           DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Matches
+// ---------------------------------------------------------------------------
+
+model Match {
+  id          String   @id @default(cuid())
+  playedAt    DateTime @default(now())
+  notes       String?
+
+  createdById String
+  createdBy   User     @relation("MatchCreatedBy", fields: [createdById], references: [id])
+
+  players     MatchPlayer[]
+
+  createdAt   DateTime @default(now())
+
+  @@index([playedAt])
+}
+
+model MatchPlayer {
+  id        String  @id @default(cuid())
+  matchId   String
+  match     Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  // Snapshot of which deck was piloted (nullable in case deck was deleted).
+  deckId    String?
+  deck      Deck?   @relation(fields: [deckId], references: [id])
+  deckName  String
+
+  placement Int     // 1 = winner ... 4 = last
+  turnOrder Int?    // optional seat / turn order
+
+  @@unique([matchId, userId])
+  @@index([userId])
+  @@index([matchId])
+}
