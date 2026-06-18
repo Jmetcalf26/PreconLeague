@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import type { League } from "@prisma/client";
 import type { RuleConfig } from "./validation";
@@ -9,7 +10,21 @@ const LEAGUE_ID = "league";
 export async function getLeague(): Promise<League> {
   const existing = await prisma.league.findUnique({ where: { id: LEAGUE_ID } });
   if (existing) return existing;
-  return prisma.league.create({ data: { id: LEAGUE_ID } });
+  // First-boot race: several requests can all see "no row" at once and each
+  // try to create it. Only one INSERT wins the unique constraint; the rest
+  // catch P2002 and re-read the row the winner just created.
+  try {
+    return await prisma.league.create({ data: { id: LEAGUE_ID } });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const row = await prisma.league.findUnique({ where: { id: LEAGUE_ID } });
+      if (row) return row;
+    }
+    throw err;
+  }
 }
 
 export function leagueToRules(league: League): RuleConfig {
