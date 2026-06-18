@@ -83,6 +83,7 @@ Handy scripts: `npm run build`, `npm run start`, `npm run typecheck`, `npm run d
 |---|---|---|
 | `DATABASE_URL` | ✅ | PostgreSQL connection string. |
 | `AUTH_SECRET` | ✅ | Long random string used to sign session tokens. |
+| `COOKIE_SECURE` | – | Set to `true` to mark the session cookie `Secure` (HTTPS-only). Leave unset/`false` when serving over plain HTTP on a LAN (e.g. `http://192.168.x.x:3000`), otherwise browsers drop the login cookie. |
 | `SCRYFALL_USER_AGENT` | – | Identifies the app to Scryfall (they ask API users to set one). |
 | `ADMIN_EMAIL` | – | This email is granted admin on registration. The very first account is always admin too. |
 

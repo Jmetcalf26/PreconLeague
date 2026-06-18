@@ -16,6 +16,9 @@ const schema = z.object({
   minDeckSize: z.number().int().min(1).max(250).optional(),
   maxDeckSize: z.number().int().min(1).max(250).optional(),
   bannedCards: z.array(z.string().trim().min(1)).max(500).optional(),
+  enforceMaxChanges: z.boolean().optional(),
+  maxLandChanges: z.number().int().min(0).max(250).optional(),
+  maxNonlandChanges: z.number().int().min(0).max(250).optional(),
   placementPoints: z.array(z.number().int().min(0).max(100)).max(8).optional(),
 });
 

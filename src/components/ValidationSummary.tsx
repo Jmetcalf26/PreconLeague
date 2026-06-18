@@ -6,7 +6,7 @@ export function ValidationSummary({
 }: {
   validation: ValidationResult;
 }) {
-  const { ok, violations, budget } = validation;
+  const { ok, violations, budget, changes } = validation;
   const errors = violations.filter((v) => v.severity === "error");
   const warnings = violations.filter((v) => v.severity === "warning");
   const pct = budget.limit > 0 ? (budget.spent / budget.limit) * 100 : 0;
@@ -45,6 +45,20 @@ export function ValidationSummary({
             : `${usd(-budget.remaining)} over budget`}
         </p>
       </div>
+
+      {changes.enforced && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-ink-400">Card changes</span>
+          <span className="flex gap-3">
+            <span className={changes.land > changes.maxLand ? "font-semibold text-red-400" : "text-ink-200"}>
+              {changes.land} / {changes.maxLand} lands
+            </span>
+            <span className={changes.nonland > changes.maxNonland ? "font-semibold text-red-400" : "text-ink-200"}>
+              {changes.nonland} / {changes.maxNonland} non-lands
+            </span>
+          </span>
+        </div>
+      )}
 
       {(errors.length > 0 || warnings.length > 0) && (
         <ul className="space-y-1.5 text-sm">

@@ -15,6 +15,9 @@ export function AdminForm({ league }: { league: League }) {
     requireCommander: league.requireCommander,
     minDeckSize: league.minDeckSize,
     maxDeckSize: league.maxDeckSize,
+    enforceMaxChanges: league.enforceMaxChanges,
+    maxLandChanges: league.maxLandChanges,
+    maxNonlandChanges: league.maxNonlandChanges,
     placementPoints: league.placementPoints.join(", "),
     bannedCards: league.bannedCards.join("\n"),
   });
@@ -43,6 +46,9 @@ export function AdminForm({ league }: { league: League }) {
           requireCommander: form.requireCommander,
           minDeckSize: Number(form.minDeckSize),
           maxDeckSize: Number(form.maxDeckSize),
+          enforceMaxChanges: form.enforceMaxChanges,
+          maxLandChanges: Number(form.maxLandChanges),
+          maxNonlandChanges: Number(form.maxNonlandChanges),
           placementPoints: form.placementPoints
             .split(",")
             .map((s) => parseInt(s.trim(), 10))
@@ -73,7 +79,14 @@ export function AdminForm({ league }: { league: League }) {
       const data = await res.json();
       setMsg(
         res.ok
-          ? { ok: true, text: `Refreshed ${data.updated} card prices from Scryfall.` }
+          ? {
+              ok: true,
+              text: `Refreshed ${data.updated} card prices from Scryfall${
+                data.mtgjsonFallback
+                  ? ` (${data.mtgjsonFallback} priced via MTGJSON fallback)`
+                  : ""
+              }.`,
+            }
           : { ok: false, text: data.error ?? "Couldn't refresh." },
       );
       router.refresh();
@@ -154,6 +167,43 @@ export function AdminForm({ league }: { league: League }) {
             checked={form.requireCommander}
             onChange={(v) => set("requireCommander", v)}
           />
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-ink-800 bg-ink-950/40 p-3">
+          <Toggle
+            label="Limit card changes from the original precon"
+            checked={form.enforceMaxChanges}
+            onChange={(v) => set("enforceMaxChanges", v)}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label">Max land changes</label>
+              <input
+                type="number"
+                min="0"
+                className="input disabled:opacity-50"
+                value={form.maxLandChanges}
+                disabled={!form.enforceMaxChanges}
+                onChange={(e) => set("maxLandChanges", Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="label">Max non-land changes</label>
+              <input
+                type="number"
+                min="0"
+                className="input disabled:opacity-50"
+                value={form.maxNonlandChanges}
+                disabled={!form.enforceMaxChanges}
+                onChange={(e) => set("maxNonlandChanges", Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-ink-500">
+            A “change” is any card in a deck that wasn’t in its imported precon
+            (an upgrade), counted by copies. Lands and non-lands are capped
+            separately.
+          </p>
         </div>
 
         <div>

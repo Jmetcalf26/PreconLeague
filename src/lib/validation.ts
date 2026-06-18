@@ -9,6 +9,9 @@ export type RuleConfig = {
   minDeckSize: number;
   maxDeckSize: number;
   bannedCards: string[];
+  enforceMaxChanges: boolean;
+  maxLandChanges: number;
+  maxNonlandChanges: number;
 };
 
 export type DeckCardState = {
@@ -37,6 +40,15 @@ export type ValidationResult = {
     remaining: number;
     unpricedCards: string[];
   };
+  // Card changes vs the original precon (cards added that weren't in the
+  // baseline), split by lands / non-lands.
+  changes: {
+    enforced: boolean;
+    land: number;
+    nonland: number;
+    maxLand: number;
+    maxNonland: number;
+  };
   totals: {
     cardCount: number; // includes commander(s)
     commanderCount: number;
@@ -47,6 +59,10 @@ export type ValidationResult = {
 function isBasicLand(typeLine: string): boolean {
   const t = typeLine.toLowerCase();
   return t.includes("basic") && t.includes("land");
+}
+
+function isLand(typeLine: string): boolean {
+  return typeLine.toLowerCase().includes("land");
 }
 
 export function validateDeck(
@@ -157,6 +173,30 @@ export function validateDeck(
     });
   }
 
+  // --- Max card changes (lands vs non-lands) ---------------------------------
+  let landChanges = 0;
+  let nonlandChanges = 0;
+  for (const c of added) {
+    if (isLand(c.typeLine)) landChanges += c.quantity;
+    else nonlandChanges += c.quantity;
+  }
+  if (rules.enforceMaxChanges) {
+    if (landChanges > rules.maxLandChanges) {
+      violations.push({
+        severity: "error",
+        code: "too-many-land-changes",
+        message: `You've changed ${landChanges} land${landChanges === 1 ? "" : "s"}; the maximum is ${rules.maxLandChanges}.`,
+      });
+    }
+    if (nonlandChanges > rules.maxNonlandChanges) {
+      violations.push({
+        severity: "error",
+        code: "too-many-nonland-changes",
+        message: `You've changed ${nonlandChanges} non-land card${nonlandChanges === 1 ? "" : "s"}; the maximum is ${rules.maxNonlandChanges}.`,
+      });
+    }
+  }
+
   return {
     ok: violations.every((v) => v.severity !== "error"),
     violations,
@@ -165,6 +205,13 @@ export function validateDeck(
       spent,
       remaining,
       unpricedCards,
+    },
+    changes: {
+      enforced: rules.enforceMaxChanges,
+      land: landChanges,
+      nonland: nonlandChanges,
+      maxLand: rules.maxLandChanges,
+      maxNonland: rules.maxNonlandChanges,
     },
     totals: {
       cardCount,

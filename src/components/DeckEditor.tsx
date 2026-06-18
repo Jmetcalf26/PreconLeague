@@ -180,7 +180,7 @@ export function DeckEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <div className="card-panel space-y-3 p-4">
+        <div className="card-panel relative z-20 space-y-3 p-4">
           <div>
             <label className="label">Deck name</label>
             <input
@@ -206,7 +206,7 @@ export function DeckEditor({
               <span className="absolute right-3 top-9 text-xs text-ink-500">…</span>
             )}
             {showResults && results.length > 0 && (
-              <div className="card-panel absolute z-30 mt-1 max-h-72 w-full overflow-y-auto scroll-thin p-1">
+              <div className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto scroll-thin rounded-2xl border border-ink-700 bg-ink-900 p-1 shadow-xl shadow-black/40">
                 {results.map((c) => (
                   <button
                     key={c.id}

@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import type { CardCache } from "@prisma/client";
+import { getMtgjsonUsdPrices } from "./mtgjson";
 
 const API = "https://api.scryfall.com";
 
@@ -102,6 +103,7 @@ function deriveCanBeCommander(raw: RawCard): boolean {
 
 function toCacheRow(raw: RawCard) {
   const img = imagesFor(raw);
+  const priceUsd = parsePrice(raw.prices?.usd);
   return {
     id: raw.id,
     oracleId: raw.oracle_id ?? raw.id,
@@ -115,8 +117,9 @@ function toCacheRow(raw: RawCard) {
     colors: raw.colors ?? [],
     colorIdentity: raw.color_identity ?? [],
     canBeCommander: deriveCanBeCommander(raw),
-    priceUsd: parsePrice(raw.prices?.usd),
+    priceUsd,
     priceUsdFoil: parsePrice(raw.prices?.usd_foil),
+    priceSource: priceUsd != null ? "scryfall" : null,
     imageSmall: img.small ?? null,
     imageNormal: img.normal ?? null,
     imageArtCrop: img.art_crop ?? null,
@@ -127,10 +130,18 @@ function toCacheRow(raw: RawCard) {
 
 async function upsertCache(raw: RawCard): Promise<CardCache> {
   const row = toCacheRow(raw);
+  // On update, don't let a missing Scryfall price clobber one the MTGJSON
+  // fallback already filled in — only overwrite priceUsd/source when Scryfall
+  // actually has a price.
+  const update = { ...row };
+  if (row.priceUsd == null) {
+    delete (update as Partial<typeof update>).priceUsd;
+    delete (update as Partial<typeof update>).priceSource;
+  }
   return prisma.cardCache.upsert({
     where: { id: row.id },
     create: row,
-    update: row,
+    update,
   });
 }
 
@@ -209,8 +220,14 @@ export async function searchCards(query: string): Promise<CardCache[]> {
   }
 }
 
+export type RefreshResult = {
+  updated: number;
+  /** How many cards got a price from the MTGJSON fallback (no Scryfall price). */
+  mtgjsonFallback: number;
+};
+
 /** Refresh prices/data for the given cached card ids. */
-export async function refreshCards(ids: string[]): Promise<number> {
+export async function refreshCards(ids: string[]): Promise<RefreshResult> {
   let updated = 0;
   for (let i = 0; i < ids.length; i += 75) {
     const batch = ids.slice(i, i + 75);
@@ -224,5 +241,40 @@ export async function refreshCards(ids: string[]): Promise<number> {
       updated += 1;
     }
   }
-  return updated;
+  const mtgjsonFallback = await applyMtgjsonFallback(ids);
+  return { updated, mtgjsonFallback };
+}
+
+/**
+ * For any of the given cards still missing a USD price after the Scryfall
+ * refresh, try MTGJSON. Failures here are logged but never abort the refresh.
+ */
+async function applyMtgjsonFallback(ids: string[]): Promise<number> {
+  const targets = await prisma.cardCache.findMany({
+    where: { id: { in: ids }, priceUsd: null },
+    select: { id: true, setCode: true, mtgjsonUuid: true },
+  });
+  if (targets.length === 0) return 0;
+
+  try {
+    const { prices, resolvedUuids } = await getMtgjsonUsdPrices(targets);
+    let filled = 0;
+    for (const t of targets) {
+      const newUuid = t.mtgjsonUuid == null ? resolvedUuids.get(t.id) ?? null : null;
+      const price = prices.get(t.id) ?? null;
+      if (newUuid == null && price == null) continue;
+      await prisma.cardCache.update({
+        where: { id: t.id },
+        data: {
+          ...(newUuid != null ? { mtgjsonUuid: newUuid } : {}),
+          ...(price != null ? { priceUsd: price, priceSource: "mtgjson" } : {}),
+        },
+      });
+      if (price != null) filled += 1;
+    }
+    return filled;
+  } catch (err) {
+    console.error("MTGJSON price fallback failed:", err);
+    return 0;
+  }
 }

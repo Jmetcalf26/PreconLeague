@@ -21,5 +21,8 @@ export function leagueToRules(league: League): RuleConfig {
     minDeckSize: league.minDeckSize,
     maxDeckSize: league.maxDeckSize,
     bannedCards: league.bannedCards,
+    enforceMaxChanges: league.enforceMaxChanges,
+    maxLandChanges: league.maxLandChanges,
+    maxNonlandChanges: league.maxNonlandChanges,
   };
 }

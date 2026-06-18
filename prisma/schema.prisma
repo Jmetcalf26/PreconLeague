@@ -107,6 +107,11 @@ model CardCache {
 
   priceUsd      Float?
   priceUsdFoil  Float?
+  // Which source last set priceUsd: "scryfall" (primary) or "mtgjson" (fallback).
+  priceSource   String?
+  // Cached MTGJSON uuid for this Scryfall printing, so the price fallback can
+  // skip re-downloading per-set files on later refreshes.
+  mtgjsonUuid   String?
 
   imageSmall    String?
   imageNormal   String?
@@ -138,6 +143,12 @@ model League {
   minDeckSize         Int      @default(100)
   maxDeckSize         Int      @default(100)
   bannedCards         String[] @default([])
+
+  // Cap on how many cards may differ from the original precon (upgrades),
+  // counted separately for lands and non-lands. Only enforced when enabled.
+  enforceMaxChanges   Boolean  @default(false)
+  maxLandChanges      Int      @default(10)
+  maxNonlandChanges   Int      @default(15)
 
   // Scoring for standings: points awarded by finishing placement (index 0 = 1st).
   placementPoints     Int[]    @default([3, 1, 0, 0])

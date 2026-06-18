@@ -13,6 +13,6 @@ export const POST = handle(async () => {
     select: { cardId: true },
   });
   const ids = used.map((u) => u.cardId);
-  const updated = await refreshCards(ids);
-  return json({ ok: true, updated });
+  const result = await refreshCards(ids);
+  return json({ ok: true, ...result });
 });

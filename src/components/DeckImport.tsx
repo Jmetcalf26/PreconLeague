@@ -147,7 +147,7 @@ export function DeckImport() {
               className="btn-primary"
               disabled={busy || resolvedCount === 0}
             >
-              {busy ? "Creating…" : `Create deck (${resolvedCount} cards)`}
+              {busy ? "Creating…" : `Create deck (${totalQty} cards)`}
             </button>
             <button
               onClick={() => setPreview(null)}
