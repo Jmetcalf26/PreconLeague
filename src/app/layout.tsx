@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 import { Nav } from "@/components/Nav";
+import { SparkleTrail } from "@/components/SparkleTrail";
+import { ChiptunePlayer } from "@/components/ChiptunePlayer";
+import { WebBadges } from "@/components/WebBadges";
 
 export const metadata: Metadata = {
   title: "Precon League",
@@ -19,6 +22,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        <SparkleTrail />
+        <ChiptunePlayer />
         {/* Ye olde scrolling banner */}
         <div className="overflow-hidden border-b-4 border-double border-brand-500 bg-ink-950 py-1.5 text-sm font-bold text-brand-300">
           <div className="inline-block whitespace-nowrap animate-marquee">
@@ -64,6 +69,8 @@ export default async function RootLayout({
               ✦ NEW! ✦
             </span>
           </div>
+
+          <WebBadges />
 
           <hr className="mx-auto mb-4 max-w-lg" />
 

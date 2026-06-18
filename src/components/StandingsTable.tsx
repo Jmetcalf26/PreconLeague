@@ -37,19 +37,44 @@ export function StandingsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
+          {rows.map((r, i) => {
+            const medal = ["🥇", "🥈", "🥉"][i];
+            return (
             <tr
               key={r.userId}
-              className="border-b border-ink-800/60 last:border-0 hover:bg-ink-800/40"
+              className={`border-b border-ink-800/60 last:border-0 hover:bg-ink-800/40 ${
+                i % 2 ? "bg-ink-900/40" : ""
+              } ${i === 0 ? "bg-brand-500/10" : ""}`}
             >
-              <td className="px-3 py-2.5 font-semibold text-ink-400">{i + 1}</td>
+              <td className="px-3 py-2.5 text-center font-bold">
+                {medal ? (
+                  <span className="text-lg" title={`#${i + 1}`}>
+                    {medal}
+                  </span>
+                ) : (
+                  <span className="text-ink-400">{i + 1}</span>
+                )}
+              </td>
               <td className="px-3 py-2.5">
                 <Link
                   href={`/players/${r.userId}`}
                   className="flex items-center gap-2 hover:underline"
                 >
                   <Avatar name={r.userName} color={r.avatarColor} size={28} />
-                  <span className="font-medium">{r.userName}</span>
+                  <span
+                    className={`font-medium ${
+                      i === 0
+                        ? "font-display text-base text-brand-300 [text-shadow:1px_1px_0_#000]"
+                        : ""
+                    }`}
+                  >
+                    {r.userName}
+                  </span>
+                  {i === 0 && (
+                    <span className="animate-blink text-[#ff4dff]" aria-hidden>
+                      ◄ CHAMPION!
+                    </span>
+                  )}
                 </Link>
               </td>
               <td className="px-3 py-2.5 text-right font-bold text-brand-400">
@@ -68,7 +93,8 @@ export function StandingsTable({
                 </>
               )}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>
