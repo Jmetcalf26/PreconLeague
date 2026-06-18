@@ -38,9 +38,11 @@ export default async function HomePage() {
       <section className="card-panel overflow-hidden">
         <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-brand-400">{league.name}</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">
-              Welcome back, {user.name.split(" ")[0]}.
+            <p className="text-sm font-bold uppercase tracking-wider text-brand-400">
+              ✦ {league.name} ✦
+            </p>
+            <h1 className="wordart mt-1 text-4xl font-bold tracking-tight">
+              Welcome back, {user.name.split(" ")[0]}!
             </h1>
             <p className="mt-2 max-w-xl text-sm text-ink-400">
               {league.description ??

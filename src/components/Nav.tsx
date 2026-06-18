@@ -30,13 +30,15 @@ export function Nav({ user }: { user: SessionUser | null }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-800 bg-ink-950/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b-4 border-double border-brand-500 bg-ink-950 shadow-[0_4px_0_0_rgba(0,0,0,0.6)]">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-white">
+          <span className="grid h-9 w-9 place-items-center border-2 border-brand-200 bg-gradient-to-b from-brand-300 to-brand-600 text-lg text-ink-950 shadow-[2px_2px_0_0_#000] animate-wiggle">
             ⚔
           </span>
-          <span className="hidden sm:inline">Precon League</span>
+          <span className="hidden font-display text-xl text-brand-300 animate-glow sm:inline">
+            Precon League
+          </span>
         </Link>
 
         <nav className="hidden flex-1 items-center gap-1 md:flex">

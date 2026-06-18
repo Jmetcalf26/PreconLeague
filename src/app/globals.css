@@ -3,63 +3,212 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  --font-sans: "Trebuchet MS", "Verdana", "Geneva", Tahoma, sans-serif;
+  --font-display: "UnifrakturCook", "Luminari", "Papyrus", "Herculanum",
+    "Trebuchet MS", fantasy;
 }
 
 html {
   color-scheme: dark;
 }
 
+/* ----------------------------------------------------------------------------
+   CRUNCH DIRECTIVE: square everything. Hard corners are the whole point of the
+   early-web look, so we stamp out border radii globally (avatars, pips and all
+   become tidy little rectangles, just like 1998 intended).
+---------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
 body {
   @apply bg-ink-950 text-ink-100 antialiased;
+  /* Tiled starfield over a deep dungeon-night gradient. */
+  background-color: #0c0620;
   background-image:
-    radial-gradient(900px 500px at 12% -8%, rgba(237, 89, 31, 0.10), transparent),
-    radial-gradient(800px 500px at 95% 0%, rgba(97, 112, 144, 0.12), transparent);
+    radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 90px 70px, #ffd95c, transparent),
+    radial-gradient(1px 1px at 140px 40px, #9ad7ff, transparent),
+    radial-gradient(2px 2px at 50px 110px, #fff, transparent),
+    radial-gradient(1px 1px at 170px 130px, #ff9ce8, transparent),
+    radial-gradient(900px 500px at 12% -8%, rgba(245, 166, 35, 0.16), transparent),
+    radial-gradient(800px 500px at 95% 0%, rgba(120, 80, 200, 0.18), transparent);
+  background-size:
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    100% 100%,
+    100% 100%;
   background-attachment: fixed;
 }
 
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+  h1 {
+    color: #ffd95c;
+    text-shadow: 2px 2px 0 #000, 0 0 14px rgba(245, 166, 35, 0.45);
+  }
+  h2,
+  h3 {
+    color: #ffcc33;
+    text-shadow: 1px 1px 0 #000;
+  }
+  /* Unstyled in-content links get the classic glowing-gold treatment. Nav and
+     branded links keep their own utility colors (higher specificity). */
+  a {
+    color: #ffcc33;
+  }
+  a:hover {
+    color: #fff;
+  }
+  hr {
+    height: 5px;
+    border: none;
+    background: repeating-linear-gradient(
+      90deg,
+      #f5a623 0 10px,
+      #2e2150 10px 20px
+    );
+  }
+  ::selection {
+    background: #ffcc33;
+    color: #190f33;
+  }
+}
+
 @layer components {
+  /* Beveled "treasure chest" panel — ridge border + hard offset shadow, no
+     blur, no rounding. The crunchiest surface in the app. */
   .card-panel {
-    @apply rounded-2xl border border-ink-800 bg-ink-900/70 shadow-lg shadow-black/20 backdrop-blur;
+    @apply relative border-4 bg-ink-900;
+    border-style: ridge;
+    border-color: #f5a623;
+    background-image: linear-gradient(
+      180deg,
+      rgba(245, 166, 35, 0.05),
+      rgba(0, 0, 0, 0.25)
+    );
+    box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.55), inset 0 0 0 2px #2e2150;
   }
 
+  /* Win95-meets-the-Forgotten-Realms beveled buttons. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold
-           transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400
-           disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold
+           uppercase tracking-wide focus:outline-none disabled:cursor-not-allowed
+           disabled:opacity-50;
+    border-width: 3px;
+    border-style: outset;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+    box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.6);
+    transition: filter 0.1s;
+  }
+  .btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+  }
+  .btn:active:not(:disabled) {
+    border-style: inset;
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 0 rgba(0, 0, 0, 0.6);
   }
   .btn-primary {
-    @apply btn bg-brand-500 text-white hover:bg-brand-600;
+    @apply btn text-ink-950;
+    background: linear-gradient(#ffe88a, #f5a623);
+    border-color: #fff3bf #8a4700 #8a4700 #fff3bf;
   }
   .btn-secondary {
-    @apply btn border border-ink-700 bg-ink-800 text-ink-100 hover:bg-ink-700;
+    @apply btn text-black;
+    background: linear-gradient(#ededed, #b9b9b9);
+    border-color: #ffffff #6e6e6e #6e6e6e #ffffff;
   }
   .btn-ghost {
-    @apply btn text-ink-300 hover:bg-ink-800 hover:text-ink-100;
+    @apply btn bg-ink-800 text-ink-100;
+    border-color: #5a4a86 #190f33 #190f33 #5a4a86;
   }
   .btn-danger {
-    @apply btn border border-red-900/60 bg-red-950/40 text-red-300 hover:bg-red-900/40;
+    @apply btn text-white;
+    background: linear-gradient(#ff7b7b, #c0392b);
+    border-color: #ffc2c2 #7a1f15 #7a1f15 #ffc2c2;
   }
 
+  /* Classic sunken white form field. */
   .input {
-    @apply w-full rounded-lg border border-ink-700 bg-ink-950/60 px-3 py-2 text-sm text-ink-100
-           placeholder:text-ink-500 focus:border-brand-500 focus:outline-none focus:ring-1
-           focus:ring-brand-500;
+    @apply w-full px-3 py-2 text-sm;
+    border: 2px inset #b0b0b0;
+    background: #fffdf5;
+    color: #190f33;
+    font-family: var(--font-sans);
   }
+  .input::placeholder {
+    color: #8a7da0;
+  }
+  .input:focus {
+    outline: 2px solid #f5a623;
+    outline-offset: 1px;
+  }
+
   .label {
-    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-400;
+    @apply mb-1.5 block text-xs font-bold uppercase tracking-wider;
+    color: #ffcc33;
+    text-shadow: 1px 1px 0 #000;
   }
+  .label::before {
+    content: "\2756  ";
+    color: #f5a623;
+  }
+
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold;
+    border: 2px outset #f5a623;
+    background: #2e2150;
+  }
+
+  /* Rainbow WordArt for big splashy headers. */
+  .wordart {
+    font-family: var(--font-display);
+    background: linear-gradient(
+      90deg,
+      #ff2d95,
+      #ffcc33,
+      #4dff88,
+      #33ccff,
+      #c77dff
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1px #000;
+    filter: drop-shadow(2px 2px 0 #000);
+  }
+
+  /* "UNDER CONSTRUCTION" barber-pole strip. */
+  .construction {
+    background-image: repeating-linear-gradient(
+      45deg,
+      #ffcc33 0 14px,
+      #190f33 14px 28px
+    );
+    background-size: 40px 40px;
   }
 }
 
-/* Thin custom scrollbars for card lists */
+/* Chunky gold scrollbars. */
 .scroll-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 14px;
+  height: 14px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: #190f33;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-ink-700;
+  background: #f5a623;
+  border: 2px outset #ffe88a;
 }
