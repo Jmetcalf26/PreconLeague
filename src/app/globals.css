@@ -4,7 +4,7 @@
 
 :root {
   --font-sans: "Trebuchet MS", "Verdana", "Geneva", Tahoma, sans-serif;
-  --font-display: "UnifrakturCook", "Luminari", "Papyrus", "Herculanum",
+  --font-display: var(--font-blackletter), "Luminari", "Papyrus", "Herculanum",
     "Trebuchet MS", fantasy;
 }
 

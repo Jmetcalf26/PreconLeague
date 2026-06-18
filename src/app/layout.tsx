@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 import { Nav } from "@/components/Nav";
 import { SparkleTrail } from "@/components/SparkleTrail";
 import { ChiptunePlayer } from "@/components/ChiptunePlayer";
 import { WebBadges } from "@/components/WebBadges";
+
+// Self-hosted blackletter so the fantasy headings render identically on every
+// device (no reliance on a system "Papyrus"/"Luminari" being installed).
+const blackletter = localFont({
+  src: "./fonts/unifrakturcook-700.woff2",
+  weight: "700",
+  display: "swap",
+  variable: "--font-blackletter",
+});
 
 export const metadata: Metadata = {
   title: "Precon League",
@@ -20,7 +30,7 @@ export default async function RootLayout({
   const user = await getCurrentUser();
 
   return (
-    <html lang="en">
+    <html lang="en" className={blackletter.variable}>
       <body>
         <SparkleTrail />
         <ChiptunePlayer />
