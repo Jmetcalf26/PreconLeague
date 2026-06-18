@@ -7,7 +7,16 @@ export const dynamic = "force-dynamic";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Name is required").max(60),
-  email: z.string().trim().toLowerCase().email("Enter a valid email"),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must be at most 30 characters")
+    .regex(
+      /^[a-z0-9_.-]+$/,
+      "Use only letters, numbers, and . _ -",
+    ),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -15,21 +24,21 @@ export const POST = handle(async (req: Request) => {
   const body = schema.parse(await req.json());
 
   const existing = await prisma.user.findUnique({
-    where: { email: body.email },
+    where: { username: body.username },
   });
   if (existing) {
-    return json({ error: "An account with that email already exists." }, 409);
+    return json({ error: "That username is already taken." }, 409);
   }
 
   const userCount = await prisma.user.count();
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  // First registered user, or the configured admin email, becomes admin.
-  const isAdmin = userCount === 0 || body.email === adminEmail;
+  const adminUsername = process.env.ADMIN_USERNAME?.trim().toLowerCase();
+  // First registered user, or the configured admin username, becomes admin.
+  const isAdmin = userCount === 0 || body.username === adminUsername;
 
   const user = await prisma.user.create({
     data: {
       name: body.name,
-      email: body.email,
+      username: body.username,
       passwordHash: await hashPassword(body.password),
       isAdmin,
     },

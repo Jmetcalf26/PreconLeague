@@ -38,7 +38,7 @@ You only need Docker and docker-compose.
 cp .env.example .env
 # Edit .env and set a strong AUTH_SECRET:
 #   openssl rand -base64 32
-# Optionally set ADMIN_EMAIL to the email you'll register with.
+# Optionally set ADMIN_USERNAME to the username you'll register with.
 
 # 2. Build & run (app + Postgres)
 docker compose up -d --build
@@ -85,7 +85,7 @@ Handy scripts: `npm run build`, `npm run start`, `npm run typecheck`, `npm run d
 | `AUTH_SECRET` | ✅ | Long random string used to sign session tokens. |
 | `COOKIE_SECURE` | – | Set to `true` to mark the session cookie `Secure` (HTTPS-only). Leave unset/`false` when serving over plain HTTP on a LAN (e.g. `http://192.168.x.x:3000`), otherwise browsers drop the login cookie. |
 | `SCRYFALL_USER_AGENT` | – | Identifies the app to Scryfall (they ask API users to set one). |
-| `ADMIN_EMAIL` | – | This email is granted admin on registration. The very first account is always admin too. |
+| `ADMIN_USERNAME` | – | This username is granted admin on registration. The very first account is always admin too. |
 
 For docker-compose you can also set `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `APP_PORT` in `.env`.
 

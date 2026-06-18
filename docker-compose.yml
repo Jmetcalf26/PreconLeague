@@ -25,7 +25,7 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in your .env file}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SCRYFALL_USER_AGENT: ${SCRYFALL_USER_AGENT:-PreconLeague/1.0}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
       NODE_ENV: production
     ports:
       - "${APP_PORT:-8080}:8080"

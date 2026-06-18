@@ -10,7 +10,7 @@ export default async function ProfilePage() {
       <div>
         <h1 className="text-2xl font-bold">Profile & settings</h1>
         <p className="mt-1 text-sm text-ink-400">
-          Signed in as {user.email}
+          Signed in as @{user.username}
         </p>
       </div>
       <ProfileForm user={user} />

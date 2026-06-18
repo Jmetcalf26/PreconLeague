@@ -61,7 +61,7 @@ async function readUserId(): Promise<string | null> {
 
 export type SessionUser = {
   id: string;
-  email: string;
+  username: string;
   name: string;
   avatarColor: string;
   bio: string | null;
@@ -75,7 +75,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     where: { id: userId },
     select: {
       id: true,
-      email: true,
+      username: true,
       name: true,
       avatarColor: true,
       bio: true,

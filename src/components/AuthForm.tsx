@@ -7,7 +7,7 @@ import Link from "next/link";
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          isRegister ? { name, email, password } : { email, password },
+          isRegister
+            ? { name, username, password }
+            : { username, password },
         ),
       });
       const data = await res.json();
@@ -69,16 +71,20 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             </div>
           )}
           <div>
-            <label className="label" htmlFor="email">
-              Email
+            <label className="label" htmlFor="username">
+              Username
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="username"
               className="input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="planeswalker99"
               required
             />
           </div>
